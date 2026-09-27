@@ -60,7 +60,16 @@ The `circleci-triage` skill fetches failed CircleCI tests with the `circleci` CL
 
 ### desktop-notify
 
-Shows Claude Code notifications with `notify-send`, titled with the session name set by `/rename`, else the git branch, else the directory name, so you can tell parallel sessions apart. Linux only; plays a sound with `canberra-gtk-play` when it is installed.
+Shows Claude Code notifications on the GNOME desktop, titled with the session name set by `/rename`, else the git branch, else the directory name, so you can tell parallel sessions apart.
+
+Supported environment: a local GNOME session on Linux. Tested with GNOME Shell 50 (Wayland) on Fedora 44. Other desktops, macOS, WSL, and SSH or headless sessions without a notification server are not supported.
+
+Requirements (Fedora package names in parentheses):
+
+- `notify-send` (`libnotify`)
+- `jq` (`jq`)
+- `tac` and `timeout` from GNU coreutils (`coreutils`)
+- Optional: `canberra-gtk-play` (`libcanberra-gtk3`) and the freedesktop sound theme (`sound-theme-freedesktop`) to play a sound. Without them, notifications are silent.
 
 ```
 /plugin install desktop-notify@itkrt2y-claude-plugins

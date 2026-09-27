@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Notification hook: show a desktop notification that says which session it came from.
 # Title: the session name set with /rename, else the git branch, else the directory name.
-# Requires notify-send (libnotify). Plays a sound with canberra-gtk-play when it is installed.
+# Targets a local GNOME session. Requires notify-send (libnotify), jq and GNU coreutils (tac, timeout).
+# Plays a sound with canberra-gtk-play when it is installed.
 
 input=$(timeout 2 cat)
 

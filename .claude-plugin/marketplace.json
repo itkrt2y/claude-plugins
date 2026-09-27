@@ -48,7 +48,7 @@
     {
       "name": "desktop-notify",
       "source": "./plugins/desktop-notify",
-      "description": "Linux desktop notifications (notify-send) for Claude Code, titled with the session name or git branch so you can tell sessions apart.",
+      "description": "GNOME desktop notifications for Claude Code, titled with the session name or git branch so you can tell sessions apart.",
       "author": {
         "name": "itkrt2y"
       }
