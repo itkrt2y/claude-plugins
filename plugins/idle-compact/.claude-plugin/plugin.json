@@ -1,0 +1,8 @@
+{
+  "name": "idle-compact",
+  "description": "Compact the conversation once after 40 idle minutes, while the 1h prompt cache is still warm.",
+  "version": "0.1.0",
+  "author": {
+    "name": "itkrt2y"
+  }
+}

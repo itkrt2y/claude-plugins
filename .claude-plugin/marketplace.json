@@ -1,0 +1,17 @@
+{
+  "name": "itkrt2y-claude-plugins",
+  "description": "itkrt2y's personal Claude Code plugins",
+  "owner": {
+    "name": "itkrt2y"
+  },
+  "plugins": [
+    {
+      "name": "idle-compact",
+      "source": "./plugins/idle-compact",
+      "description": "Compact the conversation once after 40 idle minutes, while the 1h prompt cache is still warm.",
+      "author": {
+        "name": "itkrt2y"
+      }
+    }
+  ]
+}
