@@ -1,0 +1,8 @@
+{
+  "name": "desktop-notify",
+  "description": "Linux desktop notifications (notify-send) for Claude Code, titled with the session name or git branch so you can tell sessions apart.",
+  "version": "0.1.0",
+  "author": {
+    "name": "itkrt2y"
+  }
+}

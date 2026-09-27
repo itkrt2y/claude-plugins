@@ -1,0 +1,8 @@
+{
+  "name": "circleci-triage",
+  "description": "Triage failing CircleCI tests: fetch failures with the circleci CLI in a subagent, tell flaky from regression, and propose a fix.",
+  "version": "0.1.0",
+  "author": {
+    "name": "itkrt2y"
+  }
+}

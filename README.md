@@ -25,10 +25,51 @@ Function hooks are early access: set `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1`, for 
 
 Inspired by [takahirom's idle-compact](https://github.com/takahirom/takahirom-claude-code-marketplace/tree/main/plugins/idle-compact).
 
+### review-threads
+
+Respond to pull request review threads with the `respond-reviews` skill. One script, `scripts/review-threads.sh`, lists unresolved threads as JSON, replies inside a thread, resolves threads and edits posted replies, so Claude does not hand-write GraphQL queries each time. Requires `gh` and `jq`.
+
+```
+/plugin install review-threads@itkrt2y-claude-plugins
+```
+
+### rebase
+
+The `rebase` skill tries `git rebase` in the main conversation and hands the rebase to a subagent only when it stops on conflicts, so conflict diffs and git output stay out of the main context. The subagent never pushes.
+
+```
+/plugin install rebase@itkrt2y-claude-plugins
+```
+
+### circleci-triage
+
+The `circleci-triage` skill fetches failed CircleCI tests with the `circleci` CLI in a subagent, then tells flaky failures from regressions by reading the actual values and reproducing locally.
+
+```
+/plugin install circleci-triage@itkrt2y-claude-plugins
+```
+
+### project-memory
+
+- A SessionStart hook injects `~/.claude/projects/<project>/RULES.md` as always-on rules for that project. Claude Code's auto memory loads only the first 200 lines or 25KB of `memory/MEMORY.md`; turn on the `inject_memory_index` option to inject the whole index as well.
+- The `memory-index-compact` skill shortens `MEMORY.md` when it nears the limit while keeping every link and every status of unfinished work.
+
+```
+/plugin install project-memory@itkrt2y-claude-plugins
+```
+
+### desktop-notify
+
+Shows Claude Code notifications with `notify-send`, titled with the session name set by `/rename`, else the git branch, else the directory name, so you can tell parallel sessions apart. Linux only; plays a sound with `canberra-gtk-play` when it is installed.
+
+```
+/plugin install desktop-notify@itkrt2y-claude-plugins
+```
+
 ## Development
 
 ```sh
 claude plugin validate .
-claude plugin validate plugins/idle-compact
+for p in plugins/*/; do claude plugin validate "$p"; done
 CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1 claude plugin test plugins/idle-compact
 ```

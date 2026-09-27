@@ -1,0 +1,8 @@
+{
+  "name": "rebase",
+  "description": "Rebase in the main conversation and delegate conflict resolution to a subagent only when conflicts occur, keeping conflict diffs out of the main context.",
+  "version": "0.1.0",
+  "author": {
+    "name": "itkrt2y"
+  }
+}

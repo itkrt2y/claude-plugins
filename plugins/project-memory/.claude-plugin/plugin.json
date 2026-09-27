@@ -1,0 +1,16 @@
+{
+  "name": "project-memory",
+  "description": "Inject a per-project RULES.md and the memory index at session start, and compact MEMORY.md without dropping a single link.",
+  "version": "0.1.0",
+  "author": {
+    "name": "itkrt2y"
+  },
+  "userConfig": {
+    "inject_memory_index": {
+      "type": "boolean",
+      "title": "Inject MEMORY.md",
+      "description": "Also inject the whole memory/MEMORY.md at session start. Claude Code's auto memory already loads its first 200 lines or 25KB, so turn this on only when the index is larger than that.",
+      "default": false
+    }
+  }
+}

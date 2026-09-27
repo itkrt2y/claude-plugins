@@ -12,6 +12,46 @@
       "author": {
         "name": "itkrt2y"
       }
+    },
+    {
+      "name": "review-threads",
+      "source": "./plugins/review-threads",
+      "description": "Respond to GitHub pull request review threads: list unresolved threads, reply, resolve and edit replies through one gh-based script.",
+      "author": {
+        "name": "itkrt2y"
+      }
+    },
+    {
+      "name": "rebase",
+      "source": "./plugins/rebase",
+      "description": "Rebase in the main conversation and delegate conflict resolution to a subagent only when conflicts occur, keeping conflict diffs out of the main context.",
+      "author": {
+        "name": "itkrt2y"
+      }
+    },
+    {
+      "name": "circleci-triage",
+      "source": "./plugins/circleci-triage",
+      "description": "Triage failing CircleCI tests: fetch failures with the circleci CLI in a subagent, tell flaky from regression, and propose a fix.",
+      "author": {
+        "name": "itkrt2y"
+      }
+    },
+    {
+      "name": "project-memory",
+      "source": "./plugins/project-memory",
+      "description": "Inject a per-project RULES.md and the memory index at session start, and compact MEMORY.md without dropping a single link.",
+      "author": {
+        "name": "itkrt2y"
+      }
+    },
+    {
+      "name": "desktop-notify",
+      "source": "./plugins/desktop-notify",
+      "description": "Linux desktop notifications (notify-send) for Claude Code, titled with the session name or git branch so you can tell sessions apart.",
+      "author": {
+        "name": "itkrt2y"
+      }
     }
   ]
 }
