@@ -1,7 +1,6 @@
 {
   "name": "project-memory",
   "description": "Inject a per-project RULES.md and the memory index at session start, and compact MEMORY.md without dropping a single link.",
-  "version": "0.1.0",
   "author": {
     "name": "itkrt2y"
   },

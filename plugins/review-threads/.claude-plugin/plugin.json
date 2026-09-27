@@ -1,7 +1,6 @@
 {
   "name": "review-threads",
   "description": "Respond to GitHub pull request review threads: list unresolved threads, reply, resolve and edit replies through one gh-based script.",
-  "version": "0.1.0",
   "author": {
     "name": "itkrt2y"
   }
