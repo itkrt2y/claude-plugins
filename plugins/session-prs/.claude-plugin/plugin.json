@@ -1,0 +1,8 @@
+{
+  "name": "session-prs",
+  "description": "List the pull requests created in this session in a band above the prompt.",
+  "author": {
+    "name": "itkrt2y"
+  },
+  "types": "./types/index.d.ts"
+}

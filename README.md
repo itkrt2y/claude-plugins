@@ -75,10 +75,24 @@ Requirements (Fedora package names in parentheses):
 /plugin install desktop-notify@itkrt2y-claude-plugins
 ```
 
+### session-prs
+
+Lists the pull requests created in the current session in a band above the prompt, each linked as `owner/repo#number`.
+
+- A PR is picked up when `gh pr create` succeeds in the Bash tool, or when an MCP tool named `create_pull_request` (such as the GitHub MCP server's) succeeds. The PR URL is read from the tool's output, so GitHub Enterprise hosts work too.
+- PRs created any other way, for example in the browser, are not listed.
+- The list lasts for the session. `/session-prs` or the Hide button hides the band; the next PR created shows it again.
+
+Function hooks are early access: set `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1`, for example in the `env` block of `~/.claude/settings.json`.
+
+```
+/plugin install session-prs@itkrt2y-claude-plugins
+```
+
 ## Development
 
 ```sh
 claude plugin validate .
 for p in plugins/*/; do claude plugin validate "$p"; done
-CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1 claude plugin test plugins/idle-compact
+for p in plugins/idle-compact plugins/session-prs; do CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1 claude plugin test "$p"; done
 ```
