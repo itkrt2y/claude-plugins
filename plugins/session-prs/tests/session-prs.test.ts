@@ -124,3 +124,38 @@ test('Hide removes the band', async ($, on) => {
   expect(await ui.find({ key: 'hide' })).toBeUndefined()
   await ui.unmount()
 })
+
+const use = (tool: string, input: Record<string, unknown>, result: unknown, text?: string) => ({
+  tool_use_id: `${tool}-${JSON.stringify(input)}`,
+  tool,
+  input,
+  result,
+  text,
+})
+
+test('PRs already in the transcript are listed at session start', async ($, on) => {
+  engine(on)
+  on('session.start', ($, e) => ({ cwd: e.cwd }))
+  on('command.register', ($, e) => ({ value: { command: e.name } }))
+  on('session.messages', () => ({ value: [
+    {
+      role: 'assistant',
+      text: '',
+      toolUses: [
+        use('Bash', { command: 'gh pr create --fill' }, { stdout: 'https://github.com/acme/app/pull/42\n', stderr: '', interrupted: false }),
+        use('Bash', { command: 'gh pr view 7' }, { stdout: 'https://github.com/acme/app/pull/7\n', stderr: '', interrupted: false }),
+        use('mcp__github__create_pull_request', { owner: 'acme' }, undefined, PR_JSON),
+        { ...use('Bash', { command: 'gh pr create' }, undefined, 'https://github.com/acme/app/pull/5'), isError: true as const },
+      ],
+    },
+  ] }))
+  await $.session.start({ cwd: '/repo', surface: 'terminal', isInteractive: true })
+
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ plugin: 'session-prs', surface, ...BAND })
+    expect(await ui.find({ type: 'Text', text: /\(2\)/ })).toBeDefined()
+    expect(await ui.find({ type: 'Link', text: 'acme/app#42' })).toBeDefined()
+    expect(await ui.find({ type: 'Link', text: 'acme/app#9' })).toBeDefined()
+    await ui.unmount()
+  }
+})

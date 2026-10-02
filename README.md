@@ -80,6 +80,7 @@ Requirements (Fedora package names in parentheses):
 Lists the pull requests created in the current session in a band above the prompt, each linked as `owner/repo#number`.
 
 - A PR is picked up when `gh pr create` succeeds in the Bash tool, or when an MCP tool named `create_pull_request` (such as the GitHub MCP server's) succeeds. The PR URL is read from the tool's output, so GitHub Enterprise hosts work too.
+- At session start the plugin also scans the session's transcript (the newest 4096 messages), so PRs created before it loaded, such as earlier in a resumed session, are listed too. The scan reads the local transcript only and makes no model call.
 - PRs created any other way, for example in the browser, are not listed.
 - The list lasts for the session. `/session-prs` or the Hide button hides the band; the next PR created shows it again.
 
