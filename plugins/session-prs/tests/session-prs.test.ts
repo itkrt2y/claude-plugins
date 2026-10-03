@@ -194,8 +194,8 @@ function session(on: On, id: string, index?: unknown[]) {
   )
 }
 
-const prSessions = (args: string) => ({
-  command: 'pr-sessions',
+const sessionPrs = (args: string) => ({
+  command: 'session-prs',
   args,
   origin: { kind: 'composer' as const },
   presentation: { isFullscreen: false, columns: 100 },
@@ -217,7 +217,7 @@ test('created PRs are indexed with the session that created them', async ($, on)
   await $.tool.call({ tool: 'Bash', command: 'gh pr create --fill' })
   await $.tool.call({ tool: 'mcp__github__create_pull_request', owner: 'acme', repo: 'app' })
 
-  const { text } = await $.command.run(prSessions(''))
+  const { text } = await $.command.run(sessionPrs('list'))
   expect(text).toContain('Open (1)')
   expect(text).toContain('acme/app#42 [CHANGES_REQUESTED] Add the thing')
   expect(text).toContain('claude --resume first')
@@ -231,7 +231,7 @@ test('open PRs with no recorded session point at --from-pr', async ($, on) => {
   session(on, 'first')
   await $.tool.call({ tool: 'Bash', command: 'gh pr create --fill' })
 
-  const { text } = await $.command.run(prSessions(''))
+  const { text } = await $.command.run(sessionPrs('list'))
   expect(text).toContain('Open, no recorded session (1)')
   expect(text).toContain('acme/app#50 Made in the browser')
   expect(text).toContain('claude --from-pr 50')
@@ -243,7 +243,7 @@ test('a PR keeps the session that recorded it first', async ($, on) => {
   session(on, 'second', [indexed('acme/app', 42, 'first')])
   await $.tool.call({ tool: 'Bash', command: 'gh pr create --fill' })
 
-  const { text } = await $.command.run(prSessions(''))
+  const { text } = await $.command.run(sessionPrs('list'))
   expect(text).toContain('claude --resume first')
   expect(text).not.toContain('claude --resume second')
 })
@@ -252,8 +252,8 @@ test('prune drops merged and closed PRs and keeps PRs gh could not list', async 
   engine(on)
   session(on, 'first', [indexed('acme/app', 42, 'a'), indexed('acme/app', 9, 'b'), indexed('acme/other', 1, 'c')])
 
-  expect((await $.command.run(prSessions('prune'))).text).toContain('dropped 1')
-  const { text } = await $.command.run(prSessions(''))
+  expect((await $.command.run(sessionPrs('prune'))).text).toContain('dropped 1')
+  const { text } = await $.command.run(sessionPrs('list'))
   expect(text).toContain('Open (2)')
   expect(text).toContain('acme/other#1 [unknown]')
   expect(text).not.toContain('acme/app#9 ')
@@ -263,12 +263,20 @@ test('an indexed PR older than the listed ones is looked up on its own', async (
   engine(on)
   session(on, 'first', [indexed('acme/app', 1, 'a')])
 
-  const { text } = await $.command.run(prSessions(''))
+  const { text } = await $.command.run(sessionPrs('list'))
   expect(text).toContain('acme/app#1 [MERGED] /work/a')
 })
 
 test('the list says when nothing is recorded', async ($, on) => {
   engine(on)
   session(on, 'first')
-  expect((await $.command.run(prSessions(''))).text).toBe('pr-sessions: no PRs recorded yet')
+  expect((await $.command.run(sessionPrs('list'))).text).toBe('session-prs: no PRs recorded yet')
+})
+
+test('the command with no argument toggles the band and an unknown one shows usage', async ($, on) => {
+  engine(on)
+  session(on, 'first')
+  expect((await $.command.run(sessionPrs(''))).text).toBe('session-prs: hidden')
+  expect((await $.command.run(sessionPrs(''))).text).toBe('session-prs: shown')
+  expect((await $.command.run(sessionPrs('ls'))).text).toBe('session-prs: usage: /session-prs [list|prune]')
 })

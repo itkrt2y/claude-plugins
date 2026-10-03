@@ -150,7 +150,7 @@ const clip = (text: string, max = 60) => (text.length > max ? `${text.slice(0, m
 
 export const formatIndex = (index: readonly IndexedPr[], byRepo: ReadonlyMap<string, GhPr[] | undefined>) => {
   if (index.length === 0) {
-    return 'pr-sessions: no PRs recorded yet'
+    return 'session-prs: no PRs recorded yet'
   }
   const lines: string[] = []
   const open = index.filter(pr => !isDone(ghPrOf(byRepo, pr)))
@@ -178,7 +178,7 @@ export const formatIndex = (index: readonly IndexedPr[], byRepo: ReadonlyMap<str
   }
 
   if (done.length > 0) {
-    lines.push('', `Merged or closed (${done.length}); /pr-sessions prune drops them`)
+    lines.push('', `Merged or closed (${done.length}); /session-prs prune drops them`)
     for (const pr of done) {
       lines.push(`  ${pr.repo}#${pr.number} [${ghPrOf(byRepo, pr)?.state}] ${pr.cwd}`)
     }
@@ -210,11 +210,8 @@ export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
       name: 'session-prs',
-      description: 'Show or hide the pull requests created in this session',
-    })
-    await $.command.register({
-      name: 'pr-sessions',
-      description: 'List recorded pull requests with the session that created each; `prune` drops merged and closed ones',
+      description:
+        'Show or hide the PRs created in this session; `list` lists every recorded PR with its session, `prune` drops merged and closed ones',
     })
     await scanTranscript($)
     return next(e)
@@ -229,18 +226,22 @@ export const register: Register = on => {
     return next(e)
   })
 
-  on('command.run', { command: 'session-prs' }, async $ => {
-    const { isHidden } = await update($, band, state => ({ ...state, isHidden: !state.isHidden }))
-    return { text: isHidden ? 'session-prs: hidden' : 'session-prs: shown' }
-  })
+  on('command.run', { command: 'session-prs' }, async ($, e) => {
+    const action = e.args.trim()
+    if (action === '') {
+      const { isHidden } = await update($, band, state => ({ ...state, isHidden: !state.isHidden }))
+      return { text: isHidden ? 'session-prs: hidden' : 'session-prs: shown' }
+    }
+    if (action !== 'list' && action !== 'prune') {
+      return { text: 'session-prs: usage: /session-prs [list|prune]' }
+    }
 
-  on('command.run', { command: 'pr-sessions' }, async ($, e) => {
     const index = await readIndex($)
     const byRepo = await fetchGhPrs($, index)
-    if (e.args.trim() === 'prune') {
+    if (action === 'prune') {
       const kept = index.filter(pr => !isDone(ghPrOf(byRepo, pr)))
       await $.store.set(INDEX_KEY, kept)
-      return { text: `pr-sessions: dropped ${index.length - kept.length} merged or closed PRs` }
+      return { text: `session-prs: dropped ${index.length - kept.length} merged or closed PRs` }
     }
     return { text: formatIndex(index, byRepo) }
   })
