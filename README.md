@@ -84,6 +84,14 @@ Lists the pull requests created in the current session in a band above the promp
 - PRs created any other way, for example in the browser, are not listed.
 - The list lasts for the session. `/session-prs` or the Hide button hides the band; the next PR created shows it again.
 
+Every PR it picks up also goes into an index kept in the plugin's store and shared by all sessions, with the session ID, working directory and branch of the session that recorded it first. `/pr-sessions` lists that index from any session, wherever each session's worktree lives:
+
+- Open PRs, each with its review state from `gh` and the `claude --resume <session-id>` command for the session that created it.
+- Your open PRs in the same repositories that have no recorded session, each with `claude --from-pr <number>`.
+- Merged and closed PRs, with the directory they were made in, as cleanup candidates. `/pr-sessions prune` drops them from the index.
+
+The states come from `gh pr list --author @me`, so `/pr-sessions` needs `gh` signed in to each host. A session created before the plugin was installed joins the index when it is resumed. Claude Code deletes transcripts after `cleanupPeriodDays` (30 days by default), so raise it if PRs stay open longer than that.
+
 Function hooks are early access: set `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1`, for example in the `env` block of `~/.claude/settings.json`.
 
 ```

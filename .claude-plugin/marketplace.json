@@ -56,7 +56,7 @@
     {
       "name": "session-prs",
       "source": "./plugins/session-prs",
-      "description": "List the pull requests created in this session in a band above the prompt.",
+      "description": "List the pull requests created in this session in a band above the prompt, and every recorded PR with the session that created it.",
       "author": {
         "name": "itkrt2y"
       }

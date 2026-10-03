@@ -159,3 +159,116 @@ test('PRs already in the transcript are listed at session start', async ($, on) 
     await ui.unmount()
   }
 })
+
+const ran = (stdout: string, exitCode = 0) => ({
+  value: { exitCode, stdout, stderr: '', isStdoutTruncated: false, isStderrTruncated: false },
+})
+
+const GH_LIST = JSON.stringify([
+  { number: 42, state: 'OPEN', title: 'Add the thing', reviewDecision: 'CHANGES_REQUESTED' },
+  { number: 9, state: 'MERGED', title: 'Fix the other thing', reviewDecision: 'APPROVED' },
+  { number: 50, state: 'OPEN', title: 'Made in the browser', reviewDecision: '' },
+  { number: 3, state: 'CLOSED', title: 'Abandoned', reviewDecision: '' },
+])
+
+const OLD_PR = JSON.stringify({ number: 1, state: 'MERGED', title: 'Too old to be listed', reviewDecision: '' })
+
+// gh lists acme/app only and views acme/app#1 only; any other repo fails. The store starts with `index`.
+function session(on: On, id: string, index?: unknown[]) {
+  const store = new Map<string, unknown>(index ? [['index', index]] : [])
+  on('store.get', ($, e) => ({ value: store.get(e.key) }))
+  on('store.set', ($, e) => {
+    store.set(e.key, e.value)
+    return { value: undefined }
+  })
+  on('session.id', () => ({ value: id }))
+  on('session.cwd', () => ({ value: `/work/${id}` }))
+  on('process.run', ($, e) =>
+    e.argv[0] === 'git'
+      ? ran(`branch-${id}\n`)
+      : e.argv.includes('github.com/acme/app')
+      ? ran(GH_LIST)
+      : e.argv.includes('https://github.com/acme/app/pull/1')
+      ? ran(OLD_PR)
+      : ran('', 1),
+  )
+}
+
+const prSessions = (args: string) => ({
+  command: 'pr-sessions',
+  args,
+  origin: { kind: 'composer' as const },
+  presentation: { isFullscreen: false, columns: 100 },
+})
+
+const indexed = (repo: string, number: number, sessionId: string) => ({
+  url: `https://github.com/${repo}/pull/${number}`,
+  repo,
+  number,
+  sessionId,
+  cwd: `/work/${sessionId}`,
+  branch: null,
+  recordedAt: '2026-01-01T00:00:00.000Z',
+})
+
+test('created PRs are indexed with the session that created them', async ($, on) => {
+  engine(on)
+  session(on, 'first')
+  await $.tool.call({ tool: 'Bash', command: 'gh pr create --fill' })
+  await $.tool.call({ tool: 'mcp__github__create_pull_request', owner: 'acme', repo: 'app' })
+
+  const { text } = await $.command.run(prSessions(''))
+  expect(text).toContain('Open (1)')
+  expect(text).toContain('acme/app#42 [CHANGES_REQUESTED] Add the thing')
+  expect(text).toContain('claude --resume first')
+  expect(text).toContain('/work/first (branch-first)')
+  expect(text).toContain('Merged or closed (1)')
+  expect(text).toContain('acme/app#9 [MERGED] /work/first')
+})
+
+test('open PRs with no recorded session point at --from-pr', async ($, on) => {
+  engine(on)
+  session(on, 'first')
+  await $.tool.call({ tool: 'Bash', command: 'gh pr create --fill' })
+
+  const { text } = await $.command.run(prSessions(''))
+  expect(text).toContain('Open, no recorded session (1)')
+  expect(text).toContain('acme/app#50 Made in the browser')
+  expect(text).toContain('claude --from-pr 50')
+  expect(text).not.toContain('#3 ')
+})
+
+test('a PR keeps the session that recorded it first', async ($, on) => {
+  engine(on)
+  session(on, 'second', [indexed('acme/app', 42, 'first')])
+  await $.tool.call({ tool: 'Bash', command: 'gh pr create --fill' })
+
+  const { text } = await $.command.run(prSessions(''))
+  expect(text).toContain('claude --resume first')
+  expect(text).not.toContain('claude --resume second')
+})
+
+test('prune drops merged and closed PRs and keeps PRs gh could not list', async ($, on) => {
+  engine(on)
+  session(on, 'first', [indexed('acme/app', 42, 'a'), indexed('acme/app', 9, 'b'), indexed('acme/other', 1, 'c')])
+
+  expect((await $.command.run(prSessions('prune'))).text).toContain('dropped 1')
+  const { text } = await $.command.run(prSessions(''))
+  expect(text).toContain('Open (2)')
+  expect(text).toContain('acme/other#1 [unknown]')
+  expect(text).not.toContain('acme/app#9 ')
+})
+
+test('an indexed PR older than the listed ones is looked up on its own', async ($, on) => {
+  engine(on)
+  session(on, 'first', [indexed('acme/app', 1, 'a')])
+
+  const { text } = await $.command.run(prSessions(''))
+  expect(text).toContain('acme/app#1 [MERGED] /work/a')
+})
+
+test('the list says when nothing is recorded', async ($, on) => {
+  engine(on)
+  session(on, 'first')
+  expect((await $.command.run(prSessions(''))).text).toBe('pr-sessions: no PRs recorded yet')
+})
